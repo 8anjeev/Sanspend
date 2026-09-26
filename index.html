@@ -131,7 +131,8 @@ a{color:inherit;}
 .month-switch{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:5px 6px;justify-self:center;box-shadow:var(--shadow-btn-sm);}
 .month-switch button{background:none;border:none;color:var(--text-dim);width:26px;height:26px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .month-switch button:hover{background:var(--surface-2);color:var(--text);}
-.month-label{font-size:13px;font-weight:600;padding:0 4px;min-width:96px;text-align:center;}
+.month-label{font-size:13px;font-weight:600;padding:0 4px;min-width:96px;text-align:center;cursor:pointer;border-radius:6px;transition:color .15s ease;}
+.month-label:hover{color:var(--accent);}
 .topbar-right{display:flex;align-items:center;gap:8px;justify-self:end;}
 .icon-btn{
   width:38px;height:38px;border-radius:11px;border:1px solid var(--border);
@@ -286,12 +287,27 @@ html[data-theme="dark"] .btn-danger{color:#FF8A90;}
 .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent;}
 .field-row{display:flex;gap:10px;}
 .field-row > .field{flex:1;}
-.type-toggle{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:12px;border:1px solid var(--border);}
-.type-toggle button{flex:1;border:none;background:none;padding:8px;border-radius:9px;font-weight:600;font-size:13px;color:var(--muted);cursor:pointer;}
-.type-toggle button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-1);}
-.type-toggle button.active[data-t="income"]{color:var(--accent-ink);}
-.type-toggle button.active[data-t="expense"]{color:var(--accent-2-ink);}
-.type-toggle button.active[data-t="transfer"]{color:var(--accent-4);}
+.type-toggle{display:flex;gap:6px;background:var(--surface-2);padding:4px;border-radius:14px;border:1px solid var(--border);}
+.type-toggle button{
+  flex:1;border:none;background:none;padding:11px 8px;border-radius:11px;font-weight:700;font-size:13.5px;
+  color:var(--muted);cursor:pointer;transition:background .22s ease, color .18s ease, transform .15s ease, box-shadow .22s ease;
+}
+.type-toggle button:hover:not(.active){color:var(--text-dim);}
+.type-toggle button:active{transform:scale(.95);}
+.type-toggle button.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-btn-sm);}
+#txnTypeToggle button.active{transform:scale(1.02);color:#fff;}
+#txnTypeToggle button.active[data-t="income"]{
+  background:linear-gradient(135deg,#22CB9E,#0C8F70);
+  box-shadow:0 5px 16px rgba(23,184,144,.45), inset 0 1px 0 rgba(255,255,255,.3);
+}
+#txnTypeToggle button.active[data-t="expense"]{
+  background:linear-gradient(135deg,#FF6B72,#C23B41);
+  box-shadow:0 5px 16px rgba(242,84,91,.45), inset 0 1px 0 rgba(255,255,255,.3);
+}
+#txnTypeToggle button.active[data-t="transfer"]{
+  background:linear-gradient(135deg,#79A3F5,#3D6FD1);
+  box-shadow:0 5px 16px rgba(91,141,239,.45), inset 0 1px 0 rgba(255,255,255,.3);
+}
 
 /* collapsible search / filter panels */
 .txn-search-panel,.txn-filter-panel{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px;align-items:center;width:100%;animation:panelDrop .18s ease;}
@@ -404,6 +420,28 @@ html[data-theme="dark"] .conf-low{color:#F4C25E;}
 .invest-opt-head{font-weight:700;font-size:13.5px;margin-bottom:4px;}
 
 /* insights */
+/* calendar */
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10.5px;font-weight:700;color:var(--muted);margin-bottom:5px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.cal-cell{
+  aspect-ratio:1/1;border-radius:11px;background:var(--surface-2);padding:5px 3px;
+  display:flex;flex-direction:column;align-items:center;gap:1px;font-size:9px;overflow:hidden;
+  cursor:pointer;transition:background .15s ease, transform .1s ease;border:1px solid transparent;
+}
+.cal-cell:hover{background:var(--border-soft);}
+.cal-cell:active{transform:scale(.94);}
+.cal-cell.muted{opacity:.22;pointer-events:none;}
+.cal-cell.today{border-color:var(--accent);}
+.cal-cell.selected{background:var(--accent);border-color:var(--accent);}
+.cal-cell.selected .cal-day,.cal-cell.selected .cal-amt{color:#fff;}
+.cal-day{font-size:11.5px;font-weight:700;color:var(--text-dim);}
+.cal-amt{font-weight:700;font-family:var(--ff-display);font-size:8.5px;line-height:1.2;}
+.cal-amt.inc{color:var(--accent-ink);}
+html[data-theme="dark"] .cal-amt.inc{color:#4EE0B2;}
+.cal-amt.exp{color:var(--accent-2-ink);}
+html[data-theme="dark"] .cal-amt.exp{color:#FF8A90;}
+.cal-day-header{font-weight:700;font-size:13.5px;margin:16px 0 8px;padding-top:14px;border-top:1px solid var(--border-soft);}
+
 .insight-card{display:flex;gap:12px;padding:14px;border:1px solid var(--border-soft);border-radius:14px;margin-bottom:10px;background:var(--surface-2);}
 .insight-ico{font-size:20px;}
 .insight-text{font-size:13.5px;line-height:1.45;}
@@ -464,7 +502,7 @@ canvas{max-width:100%;max-height:220px;display:block;}
       </div>
       <div class="month-switch" id="monthSwitch">
         <button id="prevMonth" aria-label="Previous month">‹</button>
-        <span class="month-label num" id="monthLabel">—</span>
+        <span class="month-label num" id="monthLabel" role="button" aria-label="Open calendar">—</span>
         <button id="nextMonth" aria-label="Next month">›</button>
       </div>
       <div class="topbar-right">
@@ -807,6 +845,26 @@ canvas{max-width:100%;max-height:220px;display:block;}
   </div>
 </div>
 
+<!-- ============ MODAL: Calendar ============ -->
+<div class="modal-overlay" id="calendarModalOverlay">
+  <div class="modal" style="max-width:480px;">
+    <div class="modal-head"><h3>Calendar</h3><button class="close-x" data-close="calendarModalOverlay">✕</button></div>
+    <div class="month-switch" style="justify-content:center;margin:0 auto 14px;width:fit-content;">
+      <button id="calPrevMonth" aria-label="Previous month">‹</button>
+      <span class="month-label num" id="calMonthLabel" style="cursor:default;">—</span>
+      <button id="calNextMonth" aria-label="Next month">›</button>
+    </div>
+    <div class="txn-ie-chip" style="margin-bottom:14px;">
+      <div class="ie-part up"><span class="ie-label">Income</span><span class="ie-val num" id="calIncome">₹0</span></div>
+      <div class="ie-sep"></div>
+      <div class="ie-part mid"><span class="ie-label">Expense</span><span class="ie-val num" id="calExpense">₹0</span></div>
+      <div class="ie-sep"></div>
+      <div class="ie-part down"><span class="ie-label">Net</span><span class="ie-val num" id="calNet">₹0</span></div>
+    </div>
+    <div id="calGridWrap"></div>
+  </div>
+</div>
+
 <!-- ============ MODAL: Confirm ============ -->
 <div class="modal-overlay" id="confirmModalOverlay">
   <div class="modal" style="max-width:380px;">
@@ -867,6 +925,12 @@ function fmtMoney(n){
 function fmtMoneyFull(n){
   n = Number(n)||0;
   return '₹'+n.toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtCompact(n){
+  n = Number(n)||0;
+  if(n>=1000000) return '₹'+(n/1000000).toFixed(1).replace(/\.0$/,'')+'M';
+  if(n>=1000) return '₹'+(n/1000).toFixed(1).replace(/\.0$/,'')+'k';
+  return '₹'+Math.round(n);
 }
 function todayISO(){ return new Date().toISOString().slice(0,10); }
 function nowTime(){ const d=new Date(); return d.toTimeString().slice(0,5); }
@@ -1442,6 +1506,77 @@ function txnRowHTML(t){
     </div>
     <div class="txn-amt ${cls} num">${sign}${fmtMoney(t.amount)}</div>
   </div>`;
+}
+
+/* ============================================================
+   CALENDAR VIEW
+   ============================================================ */
+let calSelectedDate = null;
+function renderCalendarGrid(){
+  const y = State.currentDate.getFullYear(), m = State.currentDate.getMonth();
+  $('#calMonthLabel').textContent = MONTH_NAMES[m].slice(0,3)+' '+y;
+  const monthTxns = txnsForMonth(currentMonthKey());
+  const income = sumBy(monthTxns,'income'), expense = sumBy(monthTxns,'expense');
+  $('#calIncome').textContent = fmtMoney(income);
+  $('#calExpense').textContent = fmtMoney(expense);
+  $('#calNet').textContent = fmtMoney(income-expense);
+
+  const dayMap = {};
+  monthTxns.forEach(t=>{
+    const d = parseInt(t.date.slice(8,10),10);
+    if(!dayMap[d]) dayMap[d] = {income:0, expense:0};
+    if(t.type==='income') dayMap[d].income += Number(t.amount);
+    else if(t.type==='expense') dayMap[d].expense += Number(t.amount);
+  });
+
+  const firstDay = new Date(y,m,1).getDay();
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  const daysInPrevMonth = new Date(y,m,0).getDate();
+
+  const cells = [];
+  for(let i=0;i<firstDay;i++) cells.push({day: daysInPrevMonth-firstDay+1+i, muted:true});
+  for(let d=1;d<=daysInMonth;d++) cells.push({day:d, muted:false, data: dayMap[d]});
+  while(cells.length % 7 !== 0) cells.push({day: cells.length, muted:true});
+
+  const todayStr = todayISO();
+  $('#calGridWrap').innerHTML = `
+    <div class="cal-weekdays">${['S','M','T','W','T','F','S'].map(d=>`<div>${d}</div>`).join('')}</div>
+    <div class="cal-grid">
+      ${cells.map(c=>{
+        if(c.muted) return `<div class="cal-cell muted"><div class="cal-day">${c.day}</div></div>`;
+        const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(c.day).padStart(2,'0')}`;
+        const isToday = dateStr===todayStr;
+        const isSelected = dateStr===calSelectedDate;
+        const inc = c.data? c.data.income : 0;
+        const exp = c.data? c.data.expense : 0;
+        return `<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" data-cal-day="${dateStr}">
+          <div class="cal-day">${c.day}</div>
+          ${inc>0?`<div class="cal-amt inc">+${fmtCompact(inc)}</div>`:''}
+          ${exp>0?`<div class="cal-amt exp">−${fmtCompact(exp)}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+    <div id="calDayList"></div>
+  `;
+  if(calSelectedDate) showCalDayTransactions(calSelectedDate);
+}
+function showCalDayTransactions(dateStr){
+  calSelectedDate = dateStr;
+  const dayTxns = State.transactions.filter(t=>t.date===dateStr)
+    .sort((a,b)=> String(b.time||'').localeCompare(String(a.time||'')) || b.created-a.created);
+  const niceDate = new Date(dateStr+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  const wrap = $('#calDayList');
+  if(!wrap) return;
+  wrap.innerHTML = `<div class="cal-day-header">${niceDate}</div>` +
+    (dayTxns.length
+      ? `<div class="row-list">${dayTxns.map(txnRowHTML).join('')}</div>`
+      : `<div class="empty-state" style="padding:16px;"><div class="es-icon">📅</div>No transactions on this day.</div>`);
+}
+function calGoToMonth(delta){
+  State.currentDate = new Date(State.currentDate.getFullYear(), State.currentDate.getMonth()+delta, 1);
+  calSelectedDate = null;
+  renderAll();
+  renderCalendarGrid();
 }
 
 /* ============================================================
@@ -2096,6 +2231,9 @@ document.addEventListener('click', async (e)=>{
 
   if(e.target.id==='viewAnalyticsBtn'){ switchView('analytics'); return; }
 
+  const calDay = e.target.closest('[data-cal-day]');
+  if(calDay){ calSelectedDate = calDay.dataset.calDay; renderCalendarGrid(); return; }
+
   const rowEl = e.target.closest('[data-row]');
   if(rowEl && !e.target.closest('input')){
     const t = State.transactions.find(x=>x.id===rowEl.dataset.row);
@@ -2106,7 +2244,7 @@ document.addEventListener('click', async (e)=>{
   const openTxn = e.target.closest('[data-open-txn]');
   if(openTxn && !e.target.closest('button')){
     const t = State.transactions.find(x=>x.id===openTxn.dataset.openTxn);
-    if(t) openTxnModal(t); return;
+    if(t){ closeModal('calendarModalOverlay'); openTxnModal(t); } return;
   }
   const catGoto = e.target.closest('[data-goto-cat]');
   if(catGoto){
@@ -2219,6 +2357,9 @@ $('#txnSearch').addEventListener('input', debounce((e)=>{ State.filters.search=e
    ============================================================ */
 $('#prevMonth').addEventListener('click', ()=>{ State.currentDate = new Date(State.currentDate.getFullYear(), State.currentDate.getMonth()-1, 1); renderAll(); });
 $('#nextMonth').addEventListener('click', ()=>{ State.currentDate = new Date(State.currentDate.getFullYear(), State.currentDate.getMonth()+1, 1); renderAll(); });
+$('#monthLabel').addEventListener('click', ()=>{ calSelectedDate = null; renderCalendarGrid(); openModal('calendarModalOverlay'); });
+$('#calPrevMonth').addEventListener('click', ()=> calGoToMonth(-1));
+$('#calNextMonth').addEventListener('click', ()=> calGoToMonth(1));
 
 async function setTheme(theme){
   document.documentElement.setAttribute('data-theme', theme);
