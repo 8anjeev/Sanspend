@@ -401,8 +401,14 @@ html[data-theme="dark"] .conf-high{color:#4EE0B2;}
 html[data-theme="dark"] .conf-low{color:#F4C25E;}
 
 /* budget row */
-.budget-item{padding:13px 0;border-bottom:1px solid var(--border-soft);}
+.budget-item{padding:13px 4px;border-bottom:1px solid var(--border-soft);cursor:pointer;border-radius:10px;transition:background .15s ease;}
+.budget-item:hover{background:var(--surface-2);}
 .budget-item:last-child{border-bottom:none;}
+.set-budget{color:var(--accent);font-weight:700;}
+.left-ok{color:var(--accent-ink);font-weight:600;}
+html[data-theme="dark"] .left-ok{color:#4EE0B2;}
+.left-over{color:var(--accent-2-ink);font-weight:700;}
+html[data-theme="dark"] .left-over{color:#FF8A90;}
 .budget-head{display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;margin-bottom:7px;}
 .budget-foot{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);margin-top:6px;}
 
@@ -453,6 +459,17 @@ html[data-theme="dark"] .cal-amt.exp{color:#FF8A90;}
 .settings-row:last-child{border-bottom:none;}
 .settings-row .s-title{font-weight:600;font-size:14px;}
 .settings-row .s-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.ai-box{padding:4px 4px 8px;}
+.ai-getkey{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+a.btn{text-decoration:none;}
+.ai-key-row{display:flex;gap:8px;align-items:stretch;}
+.ai-key-row input{flex:1;min-width:0;}
+.ai-actions{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 12px;}
+.ai-status{font-size:12.5px;font-weight:600;min-height:18px;color:var(--muted);}
+.ai-status.ok{color:var(--accent-ink);}
+html[data-theme="dark"] .ai-status.ok{color:#4EE0B2;}
+.ai-status.err{color:var(--accent-2-ink);}
+html[data-theme="dark"] .ai-status.err{color:#FF8A90;}
 .switch{width:44px;height:26px;border-radius:20px;background:var(--border);position:relative;cursor:pointer;flex-shrink:0;transition:background .18s ease;border:none;}
 .switch::after{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .2s cubic-bezier(.34,1.56,.64,1);box-shadow:0 1px 3px rgba(0,0,0,.3);}
 .switch.on{background:var(--accent);}
@@ -622,11 +639,19 @@ canvas{max-width:100%;max-height:220px;display:block;}
 
     <!-- ============ BUDGET ============ -->
     <div class="view hidden" id="view-budget">
+      <div class="txn-ie-chip">
+        <div class="ie-part up"><span class="ie-label">Planned</span><span class="ie-val num" id="budgetPlanned">₹0</span></div>
+        <div class="ie-sep"></div>
+        <div class="ie-part mid"><span class="ie-label">Actual</span><span class="ie-val num" id="budgetActual">₹0</span></div>
+        <div class="ie-sep"></div>
+        <div class="ie-part down"><span class="ie-label" id="budgetLeftLabel">Left</span><span class="ie-val num" id="budgetLeft">₹0</span></div>
+      </div>
       <div class="flex-between view-header">
-        <div><p class="view-sub">Set monthly limits per category and track how you're pacing.</p></div>
-        <button class="btn btn-primary btn-sm" id="addBudgetBtn">+ Add budget</button>
+        <div><p class="view-sub">Planned vs actual spending for each category. Tap one to set or change its budget.</p></div>
+        <button class="btn btn-primary btn-sm" id="addBudgetCategoryBtn">+ Category</button>
       </div>
       <div class="card" id="budgetListWrap"></div>
+      <div style="text-align:center;padding:12px;"><button class="btn btn-ghost btn-sm hidden" id="budgetToggleAllBtn"></button></div>
     </div>
 
     <!-- ============ SAVINGS ============ -->
@@ -701,7 +726,32 @@ canvas{max-width:100%;max-height:220px;display:block;}
         <div id="formFieldsWrap"></div>
       </div>
       <div class="card" style="margin-bottom:14px;">
-        <div class="settings-row"><div><div class="s-title">Manage categories</div><div class="s-sub">Add a custom category with your own icon.</div></div><button class="btn btn-ghost btn-sm" id="addCategoryBtn">+ Add</button></div>
+        <div class="settings-row"><div><div class="s-title">AI assistant · your own API key</div><div class="s-sub">Choose an AI provider, create a key on their website, then paste it here to use AI features with your own account.</div></div></div>
+        <div class="ai-box">
+          <div class="field"><label for="aiProvider">Provider</label><select id="aiProvider"></select></div>
+          <div class="ai-getkey">
+            <a class="btn btn-ghost btn-sm" id="aiGetKeyLink" href="#" target="_blank" rel="noopener noreferrer">Get API key ↗</a>
+            <span class="small-muted" id="aiGetKeyHint"></span>
+          </div>
+          <p class="small-muted" style="margin:8px 0 12px;">Providers only let you create a key while signed in on their own site, so this opens their key page — create a key there, copy it, and come back.</p>
+          <div class="field">
+            <label for="aiKeyInput">API key</label>
+            <div class="ai-key-row">
+              <input type="password" id="aiKeyInput" placeholder="Paste your API key" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+              <button class="btn btn-ghost btn-sm" id="aiShowKey" type="button">Show</button>
+            </div>
+          </div>
+          <div class="ai-status" id="aiStatus"></div>
+          <div class="ai-actions">
+            <button class="btn btn-primary btn-sm" id="aiSaveBtn" type="button">Save key</button>
+            <button class="btn btn-ghost btn-sm" id="aiTestBtn" type="button">Test key</button>
+            <button class="btn btn-danger btn-sm hidden" id="aiRemoveBtn" type="button">Remove</button>
+          </div>
+          <p class="small-muted">Your key is stored only on this device, is never included in backups or exports, and is sent only to the provider you choose. Browser storage isn't encrypted, so consider a key with a spending limit.</p>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="settings-row"><div><div class="s-title">Categories &amp; budgets</div><div class="s-sub">Add categories, set a monthly budget for each, and see planned vs actual spending.</div></div><div style="display:flex;gap:8px;"><button class="btn btn-ghost btn-sm" id="addCategoryBtn">+ Add</button><button class="btn btn-primary btn-sm" id="openBudgetsBtn">Open</button></div></div>
         <div class="settings-row"><div><div class="s-title">SMS transaction detection</div><div class="s-sub">Detect transactions from bank/UPI SMS text you paste or import. Nothing is read from your phone's inbox automatically, and SMS text is never sent or backed up anywhere.</div></div><button class="switch" id="smsSwitch"></button></div>
         <div class="settings-row"><div><div class="s-title">Paste / import SMS</div><div class="s-sub">Manually add a bank SMS to auto-fill a transaction.</div></div><button class="btn btn-ghost btn-sm" id="settingsSmsBtn">Paste SMS</button></div>
         <div class="settings-row"><div><div class="s-title">Review SMS privacy notice</div><div class="s-sub">See the explanation shown when you first opened the app.</div></div><button class="btn btn-ghost btn-sm" id="reviewSmsNoticeBtn">View</button></div>
@@ -806,6 +856,7 @@ canvas{max-width:100%;max-height:220px;display:block;}
     <div class="field hidden" id="budgetPercentField"><label>% of this month's income</label><input type="number" id="budgetPercent" min="0" max="100" step="0.5" placeholder="e.g. 10"></div>
     <p class="small-muted" id="budgetPercentPreview" style="margin:-6px 0 12px;"></p>
     <button class="btn btn-primary btn-block" id="saveBudgetBtn">Save budget</button>
+    <button class="btn btn-danger btn-block hidden" id="deleteBudgetBtn" style="margin-top:8px;" type="button">Remove budget</button>
   </div>
 </div>
 
@@ -830,6 +881,7 @@ canvas{max-width:100%;max-height:220px;display:block;}
     <div class="field"><label>Name</label><input type="text" id="newCatName" placeholder="e.g. Pet Care"></div>
     <div class="field"><label>Icon (emoji)</label><input type="text" id="newCatIcon" maxlength="2" placeholder="🐾"></div>
     <div class="field"><label>Type</label><select id="newCatType"><option value="expense">Expense</option><option value="income">Income</option></select></div>
+    <div class="field" id="newCatBudgetField"><label>Monthly budget (optional)</label><input type="number" id="newCatBudget" min="0" inputmode="decimal" placeholder="e.g. 5000 — leave empty for no budget"></div>
     <button class="btn btn-primary btn-block" id="saveCategoryBtn">Add category</button>
   </div>
 </div>
@@ -1660,33 +1712,68 @@ function renderAnalytics(){
 /* ============================================================
    12. RENDERING — BUDGET
    ============================================================ */
+let budgetShowAll = false;
 function renderBudget(){
-  const ym = currentMonthKey();
-  const monthTxns = txnsForMonth(ym);
+  const monthTxns = txnsForMonth(currentMonthKey());
   const spentMap = {};
   monthTxns.filter(t=>t.type==='expense').forEach(t=> spentMap[t.category]=(spentMap[t.category]||0)+Number(t.amount));
+
+  const rows = State.categories.filter(c=>c.type==='expense').map(c=>{
+    const b = State.budgets.find(x=>x.category===c.name) || null;
+    return {c, b, limit: b ? budgetEffectiveAmount(b) : 0, spent: spentMap[c.name]||0};
+  });
+
+  // Summary: planned vs actual across categories that have a budget
+  const planned = rows.reduce((s,r)=> s + (r.b ? r.limit : 0), 0);
+  const actual  = rows.reduce((s,r)=> s + (r.b ? r.spent : 0), 0);
+  const diff = planned - actual;
+  $('#budgetPlanned').textContent = fmtMoney(planned);
+  $('#budgetActual').textContent = fmtMoney(actual);
+  $('#budgetLeftLabel').textContent = diff < 0 ? 'Over' : 'Left';
+  $('#budgetLeft').textContent = fmtMoney(Math.abs(diff));
+
+  // Budgeted first (most used first), then unbudgeted by spending
+  const usage = r => r.limit>0 ? r.spent/r.limit : (r.spent>0 ? 999 : 0);
+  rows.sort((a,b)=>{
+    if(!!a.b !== !!b.b) return a.b ? -1 : 1;
+    return a.b ? usage(b)-usage(a) : b.spent-a.spent;
+  });
+  const active = rows.filter(r=> r.b || r.spent>0);
+  const visible = budgetShowAll ? rows : active;
+
+  const toggle = $('#budgetToggleAllBtn');
+  toggle.classList.toggle('hidden', active.length===rows.length);
+  toggle.textContent = budgetShowAll ? 'Show fewer' : 'Show all categories ('+rows.length+')';
+
   const wrap = $('#budgetListWrap');
-  if(!State.budgets.length){
-    wrap.innerHTML = `<div class="empty-state"><div class="es-icon">🎯</div><div class="es-title">No budgets set</div>Add a monthly limit per category to start tracking.</div>`;
+  if(!visible.length){
+    wrap.innerHTML = `<div class="empty-state"><div class="es-icon">🎯</div><div class="es-title">No spending or budgets yet</div>Tap “Show all categories” to set a budget for any category.</div>`;
     return;
   }
-  wrap.innerHTML = State.budgets.map(b=>{
-    const spent = spentMap[b.category]||0;
-    const limit = budgetEffectiveAmount(b);
-    const pct = limit>0 ? Math.min(100, Math.round(spent/limit*100)) : 0;
-    let cls = ''; if(pct>=100) cls='danger'; else if(pct>=70) cls='warn';
+  wrap.innerHTML = visible.map(r=>{
+    const name = escapeHtml(r.c.name);
+    if(!r.b){
+      return `<div class="budget-item" data-budget-cat="${name}">
+        <div class="budget-head"><span>${r.c.icon} ${name}</span><span class="num">${fmtMoney(r.spent)}</span></div>
+        <div class="budget-foot"><span>No budget</span><span class="set-budget">Set budget ›</span></div>
+      </div>`;
+    }
+    const pctRaw = r.limit>0 ? Math.round(r.spent/r.limit*100) : (r.spent>0 ? 100 : 0);
+    const pct = Math.min(100, pctRaw);
+    const cls = pctRaw>=100 ? 'danger' : (pctRaw>=70 ? 'warn' : '');
     let warn = '';
-    if(pct>=100) warn = `<span class="badge" style="background:rgba(242,84,91,.15);color:var(--accent-2-ink);">Exceeded</span>`;
-    else if(pct>=90) warn = `<span class="badge" style="background:rgba(244,185,66,.18);color:#9A6B00;">90% used</span>`;
-    else if(pct>=70) warn = `<span class="badge" style="background:rgba(244,185,66,.18);color:#9A6B00;">70% used</span>`;
-    const modeLabel = b.mode==='percent' ? ` <span class="small-muted">(${b.percent}% of income)</span>` : '';
-    return `<div class="budget-item">
-      <div class="budget-head"><span>${catIcon(b.category)} ${escapeHtml(b.category)} ${warn}</span><span class="num">${fmtMoney(spent)} / ${fmtMoney(limit)}${modeLabel}</span></div>
+    if(pctRaw>=100) warn = `<span class="badge" style="background:rgba(242,84,91,.15);color:var(--accent-2-ink);">Exceeded</span>`;
+    else if(pctRaw>=90) warn = `<span class="badge" style="background:rgba(244,185,66,.18);color:#9A6B00;">90% used</span>`;
+    else if(pctRaw>=70) warn = `<span class="badge" style="background:rgba(244,185,66,.18);color:#9A6B00;">70% used</span>`;
+    const modeLabel = r.b.mode==='percent' ? ` <span class="small-muted">(${r.b.percent}% of income)</span>` : '';
+    const left = r.limit - r.spent;
+    const leftText = (r.b.mode==='percent' && r.limit===0)
+      ? 'No income recorded this month'
+      : (left>=0 ? `<span class="left-ok">${fmtMoney(left)} left</span>` : `<span class="left-over">Over by ${fmtMoney(-left)}</span>`);
+    return `<div class="budget-item" data-budget-cat="${name}">
+      <div class="budget-head"><span>${r.c.icon} ${name} ${warn}</span><span class="num">${fmtMoney(r.spent)} / ${fmtMoney(r.limit)}${modeLabel}</span></div>
       <div class="pbar ${cls}"><i style="width:${pct}%;"></i></div>
-      <div class="budget-foot"><span>${pct}% used</span><span>
-        <button class="btn btn-ghost btn-sm" data-edit-budget="${b.id}">Edit</button>
-        <button class="btn btn-danger btn-sm" data-del-budget="${b.id}">Delete</button>
-      </span></div>
+      <div class="budget-foot"><span>${pctRaw}% used</span><span>${leftText}</span></div>
     </div>`;
   }).join('');
 }
@@ -1917,7 +2004,7 @@ function switchView(view){
   if(view==='invest') renderInvest();
   if(view==='accounts') renderAccounts();
   if(view==='insights') renderInsights();
-  if(view==='settings') renderFormFieldsSettings();
+  if(view==='settings'){ renderFormFieldsSettings(); renderAISettings(); }
   if(view==='dashboard') renderDashboard();
   window.scrollTo(0,0);
 }
@@ -2164,11 +2251,14 @@ $$('#budgetTypeToggle button').forEach(b=> b.addEventListener('click', ()=>{
   updateBudgetPercentPreview();
 }));
 $('#budgetPercent').addEventListener('input', updateBudgetPercentPreview);
-function openBudgetModal(b){
-  $('#budgetModalTitle').textContent = b? 'Edit Budget':'Add Budget';
+function openBudgetModal(b, presetCategory){
+  $('#budgetModalTitle').textContent = b? 'Edit Budget':'Set Budget';
   $('#budgetId').value = b? b.id : '';
-  $('#budgetCategory').innerHTML = State.categories.filter(c=>c.type==='expense').map(c=>`<option value="${escapeHtml(c.name)}">${c.icon} ${escapeHtml(c.name)}</option>`).join('');
-  if(b) $('#budgetCategory').value = b.category;
+  const sel = $('#budgetCategory');
+  sel.innerHTML = State.categories.filter(c=>c.type==='expense').map(c=>`<option value="${escapeHtml(c.name)}">${c.icon} ${escapeHtml(c.name)}</option>`).join('');
+  if(b) sel.value = b.category; else if(presetCategory) sel.value = presetCategory;
+  sel.disabled = !!(b || presetCategory);   // opened from a category row: it's that category's budget
+  $('#deleteBudgetBtn').classList.toggle('hidden', !b);
   const mode = (b && b.mode) || 'amount';
   $$('#budgetTypeToggle button').forEach(x=> x.classList.toggle('active', x.dataset.bt===mode));
   $('#budgetAmountField').classList.toggle('hidden', mode==='percent');
@@ -2198,6 +2288,18 @@ $('#saveBudgetBtn').addEventListener('click', async ()=>{
   if(idx>=0) State.budgets[idx]=b; else State.budgets.push(b);
   closeModal('budgetModalOverlay'); toast('Budget saved'); renderBudget();
 });
+$('#deleteBudgetBtn').addEventListener('click', ()=>{
+  const id = $('#budgetId').value;
+  const b = State.budgets.find(x=>x.id===id);
+  if(!b) return;
+  askConfirm('Remove budget', 'Remove the budget for '+b.category+'? Your transactions are not affected.', async ()=>{
+    await DB.del('budgets', id);
+    State.budgets = State.budgets.filter(x=>x.id!==id);
+    closeModal('budgetModalOverlay');
+    toast('Budget removed');
+    renderAll();
+  });
+});
 
 /* ---- Account Modal ---- */
 function openAccountModal(a){
@@ -2219,16 +2321,38 @@ $('#saveAccountBtn').addEventListener('click', async ()=>{
 });
 
 /* ---- Category Modal ---- */
+function openCategoryModal(){
+  $('#newCatName').value = ''; $('#newCatIcon').value = ''; $('#newCatBudget').value = '';
+  $('#newCatType').value = 'expense';
+  $('#newCatBudgetField').classList.remove('hidden');
+  openModal('categoryModalOverlay');
+}
+$('#newCatType').addEventListener('change', ()=>{
+  // budgets only make sense for spending categories
+  $('#newCatBudgetField').classList.toggle('hidden', $('#newCatType').value!=='expense');
+});
 $('#saveCategoryBtn').addEventListener('click', async ()=>{
   const name = $('#newCatName').value.trim();
   const icon = $('#newCatIcon').value.trim()||'✳️';
   const type = $('#newCatType').value;
   if(!name){ toast('Enter category name','⚠️'); return; }
   if(State.categories.some(c=>c.name.toLowerCase()===name.toLowerCase())){ toast('Category already exists','⚠️'); return; }
+  const rawBudget = $('#newCatBudget').value.trim();
+  const budgetAmt = rawBudget==='' ? null : parseFloat(rawBudget);
+  if(type==='expense' && rawBudget!=='' && (!(budgetAmt>0))){ toast('Enter a valid budget amount, or leave it empty','⚠️'); return; }
   const c = {id:uid(), name, icon, type, custom:true};
   await DB.put('categories', c);
   State.categories.push(c);
-  closeModal('categoryModalOverlay'); toast('Category added'); renderAll();
+  let withBudget = false;
+  if(type==='expense' && budgetAmt>0){
+    const b = {id:uid(), category:name, mode:'amount', amount:budgetAmt, percent:null};
+    await DB.put('budgets', b);
+    State.budgets.push(b);
+    withBudget = true;
+  }
+  closeModal('categoryModalOverlay');
+  toast(withBudget ? 'Category and budget added' : 'Category added');
+  renderAll();
 });
 
 /* ============================================================
@@ -2263,17 +2387,16 @@ document.addEventListener('click', async (e)=>{
     $('#txnFilterPanel').classList.remove('hidden');
     renderTransactionsView(); return;
   }
-  if(e.target.id==='addBudgetBtn'){ openBudgetModal(); return; }
-  const editB = e.target.closest('[data-edit-budget]');
-  if(editB){ openBudgetModal(State.budgets.find(b=>b.id===editB.dataset.editBudget)); return; }
-  const delB = e.target.closest('[data-del-budget]');
-  if(delB){
-    askConfirm('Delete budget','Remove this budget limit?', async ()=>{
-      await DB.del('budgets', delB.dataset.delBudget);
-      State.budgets = State.budgets.filter(x=>x.id!==delB.dataset.delBudget);
-      toast('Budget removed'); renderBudget();
-    }); return;
+  if(e.target.id==='addBudgetCategoryBtn'){ openCategoryModal(); return; }
+  const budgetCat = e.target.closest('[data-budget-cat]');
+  if(budgetCat){
+    const name = budgetCat.dataset.budgetCat;
+    const existing = State.budgets.find(b=>b.category===name);
+    openBudgetModal(existing, name);
+    return;
   }
+  if(e.target.id==='budgetToggleAllBtn'){ budgetShowAll = !budgetShowAll; renderBudget(); return; }
+  if(e.target.id==='openBudgetsBtn'){ switchView('budget'); return; }
   if(e.target.id==='addGoalBtn'){ openGoalModal(); return; }
   const editG = e.target.closest('[data-edit-goal]');
   if(editG){ openGoalModal(State.goals.find(g=>g.id===editG.dataset.editGoal)); return; }
@@ -2304,7 +2427,7 @@ document.addEventListener('click', async (e)=>{
     await DB.put('settings', State.settings);
     renderInvest(); return;
   }
-  if(e.target.id==='addCategoryBtn'){ openModal('categoryModalOverlay'); return; }
+  if(e.target.id==='addCategoryBtn'){ openCategoryModal(); return; }
   const ffToggle = e.target.closest('[data-ff-toggle]');
   if(ffToggle){
     const key = ffToggle.dataset.ffToggle;
@@ -2341,11 +2464,14 @@ document.addEventListener('click', async (e)=>{
     }); return;
   }
   if(e.target.id==='deleteAllBtn'){
-    askConfirm('Delete all data','This permanently erases every transaction, account, budget and goal on this device. This cannot be undone.', async ()=>{
+    askConfirm('Delete all data','This permanently erases every transaction, account, budget, goal and any saved AI API key on this device. This cannot be undone.', async ()=>{
       await DB.clearAll();
       State.transactions=[]; State.accounts=[]; State.categories=[]; State.budgets=[]; State.goals=[]; State.recurring=[];
+      delete State.settings.ai;
+      await DB.put('settings', State.settings);
       await ensureDefaults();
       toast('All data deleted'); renderAll();
+      if(!$('#view-settings').classList.contains('hidden')) renderAISettings();
     }); return;
   }
 });
@@ -2395,6 +2521,125 @@ function renderFormFieldsSettings(){
     return `<div class="settings-row"><div><div class="s-title">${FORM_FIELD_LABELS[key]}</div></div><button class="switch ${on?'on':''}" data-ff-toggle="${key}"></button></div>`;
   }).join('');
 }
+
+/* ============================================================
+   AI PROVIDER + YOUR OWN API KEY
+   Keys can only be created by the user on the provider's own
+   site, so we link there. The key is stored on this device only,
+   is excluded from exports, and is never logged.
+   ============================================================ */
+const AI_PROVIDERS = {
+  openai:{name:'OpenAI (ChatGPT)', keyUrl:'https://platform.openai.com/api-keys', testUrl:'https://api.openai.com/v1/models', auth:'bearer'},
+  anthropic:{name:'Anthropic (Claude)', keyUrl:'https://platform.claude.com/settings/keys', testUrl:'https://api.anthropic.com/v1/models', auth:'anthropic'},
+  gemini:{name:'Google (Gemini)', keyUrl:'https://aistudio.google.com/apikey', testUrl:'https://generativelanguage.googleapis.com/v1beta/models', auth:'query'},
+  mistral:{name:'Mistral AI', keyUrl:'https://console.mistral.ai/api-keys', testUrl:'https://api.mistral.ai/v1/models', auth:'bearer'},
+  groq:{name:'Groq', keyUrl:'https://console.groq.com/keys', testUrl:'https://api.groq.com/openai/v1/models', auth:'bearer'},
+  openrouter:{name:'OpenRouter (many models)', keyUrl:'https://openrouter.ai/settings/keys', testUrl:'https://openrouter.ai/api/v1/auth/key', auth:'bearer'},
+};
+function getAISettings(){
+  if(!State.settings.ai) State.settings.ai = {provider:'openai', keys:{}};
+  if(!State.settings.ai.keys) State.settings.ai.keys = {};
+  if(!AI_PROVIDERS[State.settings.ai.provider]) State.settings.ai.provider = 'openai';
+  return State.settings.ai;
+}
+function maskKey(k){ return k.length>8 ? '••••'+k.slice(-4) : '••••'; }
+function setAIStatus(msg, kind){
+  const el = $('#aiStatus');
+  el.textContent = msg||'';
+  el.className = 'ai-status'+(kind?' '+kind:'');
+}
+function renderAISettings(){
+  const ai = getAISettings();
+  const sel = $('#aiProvider');
+  sel.innerHTML = Object.keys(AI_PROVIDERS).map(id=>`<option value="${id}">${AI_PROVIDERS[id].name}</option>`).join('');
+  sel.value = ai.provider;
+  const p = AI_PROVIDERS[ai.provider];
+  $('#aiGetKeyLink').href = p.keyUrl;
+  $('#aiGetKeyHint').textContent = p.keyUrl.replace('https://','');
+  const saved = ai.keys[ai.provider];
+  const input = $('#aiKeyInput');
+  input.value = ''; input.type = 'password';
+  $('#aiShowKey').textContent = 'Show';
+  $('#aiRemoveBtn').classList.toggle('hidden', !saved);
+  $('#aiSaveBtn').textContent = saved ? 'Replace key' : 'Save key';
+  setAIStatus(saved ? 'Key saved · '+maskKey(saved) : 'No key saved for this provider yet.', saved?'ok':'');
+}
+function readAIKeyInput(){ return $('#aiKeyInput').value.replace(/\s+/g,''); }
+function validAIKeyShape(k){ return k.length>=8 && /^[\x21-\x7E]+$/.test(k); }
+async function testAIKey(providerId, key){
+  const p = AI_PROVIDERS[providerId];
+  let url = p.testUrl; const headers = {};
+  if(p.auth==='bearer') headers['Authorization'] = 'Bearer '+key;
+  else if(p.auth==='anthropic'){
+    headers['x-api-key'] = key;
+    headers['anthropic-version'] = '2023-06-01';
+    headers['anthropic-dangerous-direct-browser-access'] = 'true';
+  } else if(p.auth==='query') url += '?key='+encodeURIComponent(key);
+  const ctrl = new AbortController();
+  const timer = setTimeout(()=>ctrl.abort(), 12000);
+  try{
+    const res = await fetch(url,{method:'GET',headers,signal:ctrl.signal});
+    if(res.ok) return {ok:true};
+    if(res.status===400 || res.status===401 || res.status===403) return {ok:false, reason:'rejected'};
+    return {ok:false, reason:'http', status:res.status};
+  }catch(e){
+    return {ok:false, reason: e && e.name==='AbortError' ? 'timeout' : 'network'};
+  }finally{ clearTimeout(timer); }
+}
+$('#aiProvider').addEventListener('change', async (e)=>{
+  getAISettings().provider = e.target.value;
+  await DB.put('settings', State.settings);
+  renderAISettings();
+});
+$('#aiShowKey').addEventListener('click', ()=>{
+  const inp = $('#aiKeyInput');
+  const reveal = inp.type==='password';
+  inp.type = reveal ? 'text' : 'password';
+  $('#aiShowKey').textContent = reveal ? 'Hide' : 'Show';
+});
+$('#aiSaveBtn').addEventListener('click', async ()=>{
+  const key = readAIKeyInput();
+  if(!key){ setAIStatus('Paste your API key first.','err'); return; }
+  if(!validAIKeyShape(key)){ setAIStatus("That doesn't look like an API key — check for extra characters.",'err'); return; }
+  const ai = getAISettings();
+  ai.keys[ai.provider] = key;
+  await DB.put('settings', State.settings);
+  renderAISettings();
+  toast('API key saved');
+});
+$('#aiTestBtn').addEventListener('click', async ()=>{
+  const ai = getAISettings();
+  const typed = readAIKeyInput();
+  const key = typed || ai.keys[ai.provider];
+  if(!key){ setAIStatus('Paste a key (or save one) to test it.','err'); return; }
+  if(!validAIKeyShape(key)){ setAIStatus("That doesn't look like an API key — check for extra characters.",'err'); return; }
+  const btn = $('#aiTestBtn');
+  btn.disabled = true; btn.textContent = 'Testing…';
+  setAIStatus('Checking with '+AI_PROVIDERS[ai.provider].name+'…');
+  const r = await testAIKey(ai.provider, key);
+  btn.disabled = false; btn.textContent = 'Test key';
+  if(r.ok){
+    const unsaved = typed && typed!==ai.keys[ai.provider];
+    setAIStatus(unsaved ? 'Key works ✓ — tap Save key to keep it.' : 'Key works ✓ — the provider accepted it.','ok');
+  } else if(r.reason==='rejected'){
+    setAIStatus('The provider rejected this key. Check that you copied all of it and picked the right provider.','err');
+  } else if(r.reason==='timeout'){
+    setAIStatus('Timed out reaching the provider. Check your connection and try again.','err');
+  } else if(r.reason==='http'){
+    setAIStatus('The provider returned an error (HTTP '+r.status+'). Try again in a moment.','err');
+  } else {
+    setAIStatus("Couldn't reach the provider from the browser (you may be offline, or they block browser requests). This says nothing about your key.",'err');
+  }
+});
+$('#aiRemoveBtn').addEventListener('click', ()=>{
+  const ai = getAISettings();
+  askConfirm('Remove API key', 'Remove the saved '+AI_PROVIDERS[ai.provider].name+' key from this device?', async ()=>{
+    delete ai.keys[ai.provider];
+    await DB.put('settings', State.settings);
+    renderAISettings();
+    toast('API key removed');
+  });
+});
 $('#smsSwitch').addEventListener('click', async ()=>{
   const nowOn = State.settings.smsEnabled === false; // was off, turning on
   State.settings.smsEnabled = nowOn;
@@ -2431,10 +2676,11 @@ function exportCSV(){
   toast('CSV exported');
 }
 function exportJSON(){
+  const { ai, ...safeSettings } = State.settings; // API keys are never exported
   const backup = {
     exportedAt: new Date().toISOString(),
     transactions: State.transactions, accounts: State.accounts, categories: State.categories,
-    budgets: State.budgets, goals: State.goals, recurring: State.recurring, settings: State.settings,
+    budgets: State.budgets, goals: State.goals, recurring: State.recurring, settings: safeSettings,
   };
   downloadBlob(JSON.stringify(backup,null,2), 'ledgerly-backup.json', 'application/json');
   toast('Backup exported');
