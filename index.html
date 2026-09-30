@@ -1533,14 +1533,30 @@ function renderDashboard(){
   const segs = catTot.slice(0,6).map((c,i)=>({label:c.category, value:c.value, color:CHART_COLORS[i%CHART_COLORS.length]}));
   drawDonut($('#chartCategoryDonut'), segs);
   const totalExp = catTot.reduce((s,c)=>s+c.value,0)||1;
-  $('#dashCategoryList').innerHTML = catTot.slice(0,5).map((c,i)=>`
-    <div class="cat-row" data-goto-cat="${escapeHtml(c.category)}">
-      <div class="cat-ico" style="background:${CHART_COLORS[i%CHART_COLORS.length]}22;">${catIcon(c.category)}</div>
+  $('#dashCategoryList').innerHTML = catTot.slice(0,5).map((c,i)=>{
+    const b = State.budgets.find(x=>x.category===c.category);
+    const color = CHART_COLORS[i%CHART_COLORS.length];
+    if(b){
+      const limit = budgetEffectiveAmount(b);
+      const pctRaw = limit>0 ? Math.round(c.value/limit*100) : (c.value>0 ? 100 : 0);
+      const pct = Math.min(100, pctRaw);
+      const barColor = pctRaw>=100 ? 'var(--accent-2)' : color;
+      return `<div class="cat-row" data-goto-cat="${escapeHtml(c.category)}">
+        <div class="cat-ico" style="background:${color}22;">${catIcon(c.category)}</div>
+        <div class="cat-info">
+          <div class="cat-name"><span>${escapeHtml(c.category)}</span><b class="num">${fmtMoney(c.value)} / ${fmtMoney(limit)}</b></div>
+          <div class="pbar ${pctRaw>=100?'danger':(pctRaw>=70?'warn':'')}" style="margin-top:5px;"><i style="width:${pct}%;background:${barColor};"></i></div>
+        </div>
+      </div>`;
+    }
+    return `<div class="cat-row" data-goto-cat="${escapeHtml(c.category)}">
+      <div class="cat-ico" style="background:${color}22;">${catIcon(c.category)}</div>
       <div class="cat-info">
         <div class="cat-name"><span>${escapeHtml(c.category)}</span><b class="num">${fmtMoney(c.value)}</b></div>
-        <div class="pbar" style="margin-top:5px;"><i style="width:${Math.round(c.value/totalExp*100)}%;background:${CHART_COLORS[i%CHART_COLORS.length]};"></i></div>
+        <div class="pbar" style="margin-top:5px;"><i style="width:${Math.round(c.value/totalExp*100)}%;background:${color};"></i></div>
       </div>
-    </div>`).join('') || `<div class="empty-state"><div class="es-icon">📊</div>No expenses recorded this month yet.</div>`;
+    </div>`;
+  }).join('') || `<div class="empty-state"><div class="es-icon">📊</div>No expenses recorded this month yet.</div>`;
 
   // recent transactions
   const recent = [...State.transactions].sort((a,b)=> (b.date+String(b.time||'')).localeCompare(a.date+String(a.time||'')) || b.created-a.created).slice(0,6);
