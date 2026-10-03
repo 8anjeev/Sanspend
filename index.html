@@ -1,9 +1,524 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Sanspend — Personal Finance</title>
-<link rel="icon" type="image/png" href="./Xpends.PNG">
-<link rel="apple-touch-icon" href="./Xpends.PNG">
-<style>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>Sanspend — Personal Finance</title>
+    <link rel="icon" type="image/png" href="./Xpends.PNG" />
+    <link rel="apple-touch-icon" href="./Xpends.PNG" />
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --primary: #1d4ed8;
+        --primary-soft: #dbeafe;
+        --accent: #10b981;
+        --danger: #ef4444;
+        --text: #14213d;
+        --muted: #5a647a;
+        --border: #dfe7f2;
+        --shadow: 0 10px 30px rgba(20, 33, 61, 0.08);
+      }
+
+      * { box-sizing: border-box; }
+
+      html, body {
+        margin: 0;
+        font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+        background: linear-gradient(180deg, #eef4ff 0%, var(--bg) 100%);
+        color: var(--text);
+      }
+
+      body {
+        min-height: 100vh;
+        padding: 24px 16px 40px;
+      }
+
+      .shell {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      }
+
+      .brand-mark {
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, var(--primary), #60a5fa);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .pill {
+        background: var(--primary-soft);
+        color: var(--primary);
+        border-radius: 999px;
+        font-weight: 700;
+        padding: 9px 14px;
+        font-size: 0.85rem;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1.5fr 1fr;
+        gap: 20px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        box-shadow: var(--shadow);
+      }
+
+      .summary {
+        padding: 18px;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 16px;
+      }
+
+      .stat {
+        background: #f8fbff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      .stat-label {
+        color: var(--muted);
+        font-size: 0.78rem;
+        margin-bottom: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .stat-value {
+        font-size: clamp(1.4rem, 2vw, 2rem);
+        font-weight: 800;
+      }
+
+      .expense {
+        color: var(--danger);
+      }
+
+      .income {
+        color: var(--accent);
+      }
+
+      .form-panel {
+        padding: 20px;
+      }
+
+      h2 {
+        margin: 0 0 18px;
+        font-size: 1.25rem;
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .field-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+
+      label {
+        display: grid;
+        gap: 8px;
+        font-size: 0.92rem;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      input, select, button {
+        font: inherit;
+      }
+
+      input, select {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: #fbfdff;
+        padding: 12px 14px;
+        color: var(--text);
+      }
+
+      input:focus, select:focus {
+        border-color: var(--primary);
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.12);
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 12px;
+        padding: 12px 18px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+      }
+
+      .primary {
+        background: linear-gradient(135deg, var(--primary), #3b82f6);
+        color: white;
+      }
+
+      .secondary {
+        background: #edf2ff;
+        color: var(--primary);
+      }
+
+      .list-panel {
+        margin-top: 20px;
+        padding: 20px;
+      }
+
+      .list-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th, td {
+        text-align: left;
+        padding: 14px 10px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 10px;
+        background: #eaf0ff;
+        color: var(--primary);
+        border-radius: 999px;
+        font-weight: 700;
+        font-size: 0.72rem;
+      }
+
+      .amount {
+        font-weight: 800;
+      }
+
+      .delete {
+        background: transparent;
+        color: var(--danger);
+        font-weight: 800;
+        border: 0;
+        padding: 8px 10px;
+        cursor: pointer;
+      }
+
+      .empty {
+        color: var(--muted);
+        text-align: center;
+        padding: 24px 12px 8px;
+      }
+
+      @media (max-width: 760px) {
+        .grid, .field-row, .cards {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand" aria-label="Sanspend app logo and title">
+          <div class="brand-mark">₹</div>
+          <span>Sanspend</span>
+        </div>
+        <div class="pill">Personal Finance Dashboard</div>
+      </header>
+
+      <main>
+        <section class="grid">
+          <div class="panel summary">
+            <h2>Overview</h2>
+            <div class="cards">
+              <div class="stat">
+                <div class="stat-label">Monthly Spend</div>
+                <div class="stat-value expense" id="totalSpend">₹0</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">This Month</div>
+                <div class="stat-value" id="monthLabel">-</div>
+              </div>
+              <div class="stat">
+                <div class="stat-label">Transactions</div>
+                <div class="stat-value" id="countTransactions">0</div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="panel form-panel">
+            <h2>Add expense</h2>
+            <form id="expenseForm">
+              <label>
+                Description
+                <input id="description" type="text" placeholder="Groceries, rent, fuel..." required />
+              </label>
+
+              <div class="field-row">
+                <label>
+                  Amount
+                  <input id="amount" type="number" min="0" step="0.01" placeholder="0.00" required />
+                </label>
+                <label>
+                  Date
+                  <input id="date" type="date" required />
+                </label>
+              </div>
+
+              <label>
+                Category
+                <select id="category" required>
+                  <option value="Food">Food</option>
+                  <option value="Transport">Transport</option>
+                  <option value="Housing">Housing</option>
+                  <option value="Bills">Bills</option>
+                  <option value="Shopping">Shopping</option>
+                  <option value="Health">Health</option>
+                  <option value="Other">Other</option>
+                </select>
+              </label>
+
+              <div class="actions">
+                <button class="primary" type="submit">Save</button>
+                <button class="secondary" type="button" id="resetData">Reset</button>
+              </div>
+            </form>
+          </aside>
+        </section>
+
+        <section class="panel list-panel">
+          <div class="list-top">
+            <h2>Recent expenses</h2>
+            <div class="muted" id="budgetHint">Budget tracker</div>
+          </div>
+
+          <div id="transactionsContainer">
+            <table>
+              <thead>
+                <tr>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Amount</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="transactionList"></tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const STORAGE_KEY = 'sanspend-data-v1';
+      const defaultData = [
+        { id: 1, description: 'Groceries', category: 'Food', date: new Date().toISOString().slice(0, 10), amount: 1850 },
+        { id: 2, description: 'Travel', category: 'Transport', date: new Date().toISOString().slice(0, 10), amount: 420 },
+        { id: 3, description: 'Electricity bill', category: 'Bills', date: new Date().toISOString().slice(0, 10), amount: 980 }
+      ];
+
+      const form = document.getElementById('expenseForm');
+      const descriptionInput = document.getElementById('description');
+      const amountInput = document.getElementById('amount');
+      const dateInput = document.getElementById('date');
+      const categoryInput = document.getElementById('category');
+      const transactionList = document.getElementById('transactionList');
+      const totalSpend = document.getElementById('totalSpend');
+      const monthLabel = document.getElementById('monthLabel');
+      const countTransactions = document.getElementById('countTransactions');
+      const budgetHint = document.getElementById('budgetHint');
+      const resetDataBtn = document.getElementById('resetData');
+
+      function getStoredData() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return defaultData;
+          const parsed = JSON.parse(raw);
+          return Array.isArray(parsed) ? parsed : defaultData;
+        } catch (error) {
+          return defaultData;
+        }
+      }
+
+      function saveData(data) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      }
+
+      function formatMoney(value) {
+        return new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: 'INR',
+          maximumFractionDigits: 2
+        }).format(value || 0);
+      }
+
+      function monthName(dateString) {
+        const date = new Date(dateString || new Date());
+        return date.toLocaleString('en-IN', { month: 'long', year: 'numeric' });
+      }
+
+      function renderTransactions() {
+        const data = getStoredData();
+
+        if (!data.length) {
+          transactionList.innerHTML = `
+            <tr>
+              <td colspan="5" class="empty">No expenses added yet. Start by adding your first transaction.</td>
+            </tr>
+          `;
+        } else {
+          const rows = data
+            .slice()
+            .sort((a, b) => new Date(b.date) - new Date(a.date))
+            .map(item => `
+              <tr>
+                <td>${escapeHtml(item.description)}</td>
+                <td><span class="tag">${escapeHtml(item.category)}</span></td>
+                <td>${new Date(item.date).toLocaleDateString('en-IN')}</td>
+                <td class="amount">${formatMoney(item.amount)}</td>
+                <td><button class="delete" type="button" data-id="${item.id}">Delete</button></td>
+              </tr>
+            `)
+            .join('');
+
+          transactionList.innerHTML = rows;
+        }
+
+        const total = data.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+        const month = new Date().toISOString().slice(0, 7);
+        const monthTotal = data
+          .filter(item => (item.date || '').slice(0, 7) === month)
+          .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+        totalSpend.textContent = formatMoney(total);
+        monthLabel.textContent = monthName(new Date());
+        countTransactions.textContent = data.length;
+        budgetHint.textContent = `This month: ${formatMoney(monthTotal)} / ${formatMoney(30000)}`;
+
+        const deleteButtons = document.querySelectorAll('.delete');
+        deleteButtons.forEach(button => {
+          button.addEventListener('click', () => {
+            const id = Number(button.dataset.id);
+            const next = getStoredData().filter(item => item.id !== id);
+            saveData(next);
+            renderTransactions();
+          });
+        });
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+
+        const amount = Number(amountInput.value);
+        if (!descriptionInput.value.trim() || !amount || !dateInput.value) {
+          return;
+        }
+
+        const data = getStoredData();
+        const nextItem = {
+          id: Date.now(),
+          description: descriptionInput.value.trim(),
+          amount,
+          date: dateInput.value,
+          category: categoryInput.value
+        };
+
+        saveData([...data, nextItem]);
+        form.reset();
+        categoryInput.value = 'Food';
+        dateInput.value = new Date().toISOString().slice(0, 10);
+        renderTransactions();
+      });
+
+      resetDataBtn.addEventListener('click', () => {
+        if (confirm('Reset all expenses?')) {
+          saveData([]);
+          renderTransactions();
+        }
+      });
+
+      dateInput.value = new Date().toISOString().slice(0, 10);
+      renderTransactions();
+    </script>
+  </body>
+</html>
