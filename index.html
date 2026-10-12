@@ -1157,6 +1157,32 @@ function categoryColor(name){
 /* ============================================================
    5. SEED / DEFAULTS
    ============================================================ */
+async function dedupeCategoriesAndBudgets(){
+  // Transactions reference categories by name (not id), so merging
+  // duplicate category rows by name+type never breaks existing data.
+  const seenCat = new Map();
+  const dupCatIds = [];
+  for(const c of State.categories){
+    const key = c.type+'|'+c.name.trim().toLowerCase();
+    if(seenCat.has(key)) dupCatIds.push(c.id);
+    else seenCat.set(key, c);
+  }
+  for(const id of dupCatIds) await DB.del('categories', id);
+  if(dupCatIds.length) State.categories = State.categories.filter(c=>!dupCatIds.includes(c.id));
+
+  // A category could also have ended up with more than one budget row.
+  const seenBudget = new Map();
+  const dupBudgetIds = [];
+  for(const b of State.budgets){
+    const key = b.category;
+    if(seenBudget.has(key)) dupBudgetIds.push(b.id);
+    else seenBudget.set(key, b);
+  }
+  for(const id of dupBudgetIds) await DB.del('budgets', id);
+  if(dupBudgetIds.length) State.budgets = State.budgets.filter(b=>!dupBudgetIds.includes(b.id));
+
+  return dupCatIds.length + dupBudgetIds.length;
+}
 async function ensureDefaults(){
   if(State.categories.length===0){
     const cats = [];
@@ -2787,6 +2813,7 @@ async function init(){
   State.goals = goals;
   State.recurring = recurring;
   State.settings = settingsArr[0] || {id:'app_settings', theme:'light'};
+  const dupesRemoved = await dedupeCategoriesAndBudgets();
   await ensureDefaults();
   State.riskProfile = State.settings.riskProfile || 'moderate';
   document.documentElement.setAttribute('data-theme', State.settings.theme||'light');
@@ -2797,6 +2824,7 @@ async function init(){
   switchView('transactions');
   renderAll();
   syncSmsSwitch();
+  if(dupesRemoved>0) toast('Cleaned up '+dupesRemoved+' duplicate categor'+(dupesRemoved===1?'y':'ies')+'/budgets');
   if(!State.settings.smsNoticeSeen){
     openModal('smsNoticeModalOverlay');
   }
